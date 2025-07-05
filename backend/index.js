@@ -1,39 +1,50 @@
-const express=require("express");
+const express = require("express");
 const { createTodo, updateTodo } = require("./types");
 const { Todo } = require("./database");
-const app=express();
+const { errorHandler } = require("./middleware/errorHandler");
+const app = express();
 
 app.use(express.json())
 
-app.post("/todo",async function (req,res){
-    const createPayload=req.body;
-    const validatationSuccess=createTodo.safeParse(createPayload)
-    if(!validatationSuccess){
+app.post("/todo", async function (req, res) {
+    const createPayload = req.body;
+    const validatationSuccess = createTodo.safeParse(createPayload)
+    if (!validatationSuccess) {
         return res.status(411).json({
-            msg:"Your input is incorrect"
+            msg: "Your input is incorrect"
         })
     }
-    await Todo.create(req.body);
+    await Todo.create({
+        title: createPayload.title,
+        description: createPayload.description,
+        completed: false
+    });
     res.json({
-        msg:"Todo created"
+        msg: "Todo created"
     })
 })
 
-//1:17
-
-app.get("/todos",function (req,res){
 
 
+app.get("/todos", async function (req, res) {
+    const todos = await Todo.find();
+    res.json({todos});
 })
 
-app.put("/completed",function (req,res){
-    const updatePayload=req.body;
-    const validatationSuccess=updateTodo.safeParse(updatePayload)
-     if(!validatationSuccess){
+app.put("/completed", async function (req, res) {
+    const updatePayload = req.body;
+    const validatationSuccess = updateTodo.safeParse(updatePayload)
+    if (!validatationSuccess) {
         return res.status(411).json({
-            msg:"Your input is incorrect"
+            msg: "Your input is incorrect"
         })
     }
+    await Todo.updateOne({ _id: updatePayload.id }, { completed: true })
+    res.json({
+        msg:"Marked as completed!"
+    })
 })
+
+app.use(errorHandler);
 
 app.listen(3000)
