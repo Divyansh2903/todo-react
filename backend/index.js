@@ -2,7 +2,10 @@ const express = require("express");
 const { createTodo, updateTodo } = require("./types");
 const { Todo } = require("./database");
 const { errorHandler } = require("./middleware/errorHandler");
+const cors=require("cors")
+
 const app = express();
+app.use(cors())
 
 app.use(express.json())
 
